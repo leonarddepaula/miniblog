@@ -1,7 +1,6 @@
-import { db } from "../firebase/config";
+import { auth } from "../firebase/config";
 
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -18,7 +17,7 @@ export const useAuthentication = () => {
   // deal with memory leaks
   const [cancelled, setCancelled] = useState(false);
 
-  const auth = getAuth();
+  //const auth = getAuth(app);
 
   function checkIfIsCancelled() {
     if (cancelled) {
@@ -26,6 +25,7 @@ export const useAuthentication = () => {
     }
   }
 
+  // register
   const createUser = async (data) => {
     checkIfIsCancelled();
 
@@ -60,6 +60,44 @@ export const useAuthentication = () => {
     }
   };
 
+  // logout - signout
+  const logout = async () => {
+    checkIfIsCancelled();
+    signOut(auth);
+  };
+
+  // login - signin
+  const login = async (data) => {
+    checkIfIsCancelled();
+
+    setLoading(true);
+
+    setError(false);
+
+    try {
+      await signInWithEmailAndPassword(auth, data.email, data.password);
+      setLoading(false);
+    } catch (error) {
+      let systemErrorMessage;
+
+      if (error.message.includes("auth/user-not-found")) {
+        systemErrorMessage = "Usuário não cadastrado";
+      } else if (error.message.includes("auth/wrong-password")) {
+        systemErrorMessage = "Senha incorreta";
+      } else if (error.message.includes("auth/invalid-email")) {
+        systemErrorMessage = "E-mail inválido";
+      } else if (error.message.includes("auth/invalid-credential")) {
+        systemErrorMessage =
+          "Credenciais inválidas. Verifique seu e-mail e senha.";
+      } else {
+        systemErrorMessage = "Ocorreu um erro. Tente mais tarde.";
+      }
+
+      setError(systemErrorMessage);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     return () => {
       setCancelled(true);
@@ -71,5 +109,7 @@ export const useAuthentication = () => {
     createUser,
     error,
     loading,
+    logout,
+    login,
   };
 };
