@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebase/config";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  where,
+} from "firebase/firestore";
 
 export const useFetchDocuments = (docCollection, search = null, uid = null) => {
   const [documents, setDocuments] = useState([]);
@@ -14,11 +20,23 @@ export const useFetchDocuments = (docCollection, search = null, uid = null) => {
 
       setLoading(true);
 
-      try {
-        const collectionRef = collection(db, docCollection);
-        let q = query(collectionRef, orderBy("createdAt", "desc"));
+      const collectionRef = collection(db, docCollection);
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      try {
+        let q;
+
+        // busca
+        if (search) {
+          q = await query(
+            collectionRef,
+            where("tagsArray", "array-contains", search),
+            orderBy("createdAt", "desc")
+          );
+        } else {
+          q = await query(collectionRef, orderBy("createdAt", "desc"));
+        }
+
+        await onSnapshot(q, (querySnapshot) => {
           setDocuments(
             querySnapshot.docs.map((doc) => ({
               id: doc.id,
@@ -39,7 +57,7 @@ export const useFetchDocuments = (docCollection, search = null, uid = null) => {
     loadData();
 
     //return () => setCancelled(true); // Cleanup para evitar vazamento de memória
-  }, [docCollection, search, uid, cancelled]);
+  }, [docCollection, documents, search, uid, cancelled]);
 
   useEffect(() => {
     return () => setCancelled(true);

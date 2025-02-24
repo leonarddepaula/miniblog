@@ -12,15 +12,17 @@ import Home from "./pages/Home/Home";
 import About from "./pages/About/About";
 import Register from "./pages/Register/Register";
 import Login from "./pages/Login/Login";
+import Search from "./pages/Search/Search";
 
 // components
-import Navbar from "./component/Navbar/Navbar";
-import Footer from "./component/Footer/Footer";
+import Navbar from "./components/Navbar/Navbar";
+import Footer from "./components/Footer/Footer";
 
 // context
 import { AuthProvider } from "./context/AuthContext";
 import CreatePost from "./pages/CreatePost/CreatePost";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Post from "./pages/Post/Post";
 
 function App() {
   const [user, setUser] = useState(undefined);
@@ -47,6 +49,8 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/posts/:id" element={<Post />} />
               <Route
                 path="/login"
                 element={!user ? <Login /> : <Navigate to="/" />}
